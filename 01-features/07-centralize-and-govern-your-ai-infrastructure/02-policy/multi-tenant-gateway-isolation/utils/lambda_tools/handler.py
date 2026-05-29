@@ -38,6 +38,7 @@ def handler(event, context):
 
 # Insurance tools
 
+
 def _submit_decision(args):
     claim_id = args.get("claim_id", "CLM-001")
     decision = args.get("decision", "approved")
@@ -97,6 +98,7 @@ def _query_benefits(args):
 
 
 # Banking tools
+
 
 def _flag_suspicious(args):
     transaction_id = args.get("transaction_id", "TXN-999")

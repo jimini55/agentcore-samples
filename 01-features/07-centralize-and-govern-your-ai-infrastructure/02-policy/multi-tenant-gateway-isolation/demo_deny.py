@@ -100,25 +100,23 @@ def main():
     target_tool = sorted(insurance_only)[0]
 
     # Attempt the cross-tenant call
-    log.info(f"\n{'='*60}")
+    log.info(f"\n{'=' * 60}")
     log.info("  CROSS-TENANT CALL ATTEMPT")
-    log.info(f"{'='*60}")
+    log.info(f"{'=' * 60}")
     log.info(f"  Caller:   Banking tenant (scope: {banking_cfg['scope']})")
     log.info(f"  Tool:     {target_tool}")
     log.info("  Belongs to: Insurance tenant only")
     log.info("  Expected: DENIED")
     log.info("")
 
-    success, result = call_tool_raw(
-        gateway_url, banking_token, target_tool, {"member_id": "test-123"}
-    )
+    success, result = call_tool_raw(gateway_url, banking_token, target_tool, {"member_id": "test-123"})
 
     log.info(f"  Result: {'SUCCESS (unexpected)' if success else 'DENIED'}")
     log.info(f"  Detail: {result}")
 
-    log.info(f"\n{'='*60}")
+    log.info(f"\n{'=' * 60}")
     log.info("  EXPLANATION")
-    log.info(f"{'='*60}")
+    log.info(f"{'=' * 60}")
 
     if not success:
         log.info("  ENFORCE mode provides two layers of protection:")

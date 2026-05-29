@@ -51,10 +51,10 @@ def demo_tenant(config, tenant_name):
     cognito = config["cognito"]
     client_cfg = cognito["clients"][tenant_name]
 
-    log.info(f"\n{'='*60}")
+    log.info(f"\n{'=' * 60}")
     log.info(f"  Tenant: {tenant_name.upper()}")
     log.info(f"  Scope:  {client_cfg['scope']}")
-    log.info(f"{'='*60}")
+    log.info(f"{'=' * 60}")
 
     token = get_token(
         token_endpoint=cognito["token_endpoint"],
@@ -95,9 +95,9 @@ def main():
     insurance_tools = demo_tenant(config, "insurance")
 
     # Summary
-    log.info(f"\n{'='*60}")
+    log.info(f"\n{'=' * 60}")
     log.info("  VISIBILITY SUMMARY")
-    log.info(f"{'='*60}")
+    log.info(f"{'=' * 60}")
     log.info(f"  Insurance sees: {sorted(insurance_tools)}")
     log.info(f"  Banking sees:   {sorted(banking_tools)}")
 
@@ -113,9 +113,9 @@ def main():
         log.info(f"  Shared:          {sorted(shared)}")
 
     # Takeaway
-    log.info(f"\n{'='*60}")
+    log.info(f"\n{'=' * 60}")
     log.info("  TAKEAWAY")
-    log.info(f"{'='*60}")
+    log.info(f"{'=' * 60}")
     log.info("  Each tenant's Cedar policy defines which tools appear in tools/list.")
     log.info("  The LLM prompt only contains permitted tools. Unauthorized tools")
     log.info("  are not denied at call time; they simply do not exist in the LLM's")
