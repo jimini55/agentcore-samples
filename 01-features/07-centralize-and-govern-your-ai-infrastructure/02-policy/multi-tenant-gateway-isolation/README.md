@@ -8,29 +8,29 @@ zero tenant-specific logic.
 ## Architecture
 
 ```
-                          ┌───────────────────────────────────────────┐
-                          │         AgentCore MCP Gateway             │
-┌──────────────┐  JWT     │  ┌─────────────────────────────────────┐  │
-│  HealthCo    │─────────▶│  │  Cedar Policy Engine (ENFORCE)      │  │
-│  (insurance) │  scope:  │  │                                     │  │
-│              │ platform/│  │  principal.getTag("scope")           │  │
-└──────────────┘ insurance│  │    like "*platform/insurance*"       │  │
-                          │  │    → 6 tools visible                 │  │
-                          │  │                                     │  │
-┌──────────────┐  JWT     │  │  principal.getTag("scope")           │  │
-│  FinBank     │─────────▶│  │    like "*platform/banking*"        │  │
-│  (banking)   │  scope:  │  │    → 3 tools visible                │  │
-│              │ platform/ │  └─────────────────────────────────────┘  │
-└──────────────┘ banking  │                    │                       │
-                          └────────────────────┼───────────────────────┘
-                                               │ ALLOW
-                                               ▼
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│ submit_decision │  │ query_claims    │  │ flag_suspicious │
-│ notify_team     │  │ query_accounts  │  │ query_accounts  │
-│ (insurance)     │  │ query_members   │  │ query_txns      │
-└─────────────────┘  │ (shared tools)  │  │ (banking)       │
-                     └─────────────────┘  └─────────────────┘
+┌──────────────┐         ┌──────────────────────────────────────────────────┐
+│  HealthCo    │  JWT    │              AgentCore MCP Gateway               │
+│  (insurance) │────────▶│                                                  │
+│              │ scope:  │  ┌──────────────────────────────────────────┐    │
+└──────────────┘ platform│  │       Cedar Policy Engine (ENFORCE)       │    │
+                /insurance  │                                          │    │
+                         │  │  scope like "*platform/insurance*"        │    │
+┌──────────────┐  JWT    │  │    → 6 tools visible                     │    │
+│  FinBank     │────────▶│  │                                          │    │
+│  (banking)   │ scope:  │  │  scope like "*platform/banking*"         │    │
+│              │ platform/│  │    → 3 tools visible                     │    │
+└──────────────┘ banking │  │                                          │    │
+                         │  └──────────────────────────────────────────┘    │
+                         │                      │                            │
+                         └──────────────────────┼────────────────────────────┘
+                                                │ permitted only
+                                                ▼
+              ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+              │ submit_decision │  │ query_claims    │  │ flag_suspicious │
+              │ notify_team     │  │ query_accounts  │  │ query_accounts  │
+              │ (insurance)     │  │ query_members   │  │ query_txns      │
+              └─────────────────┘  │ (shared)        │  │ (banking)       │
+                                   └─────────────────┘  └─────────────────┘
 ```
 
 **Key insight**: In ENFORCE mode, tools without a matching `permit` policy are
