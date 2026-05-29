@@ -77,7 +77,7 @@ def demo_tenant(config, tenant_name):
 def main():
     parser = argparse.ArgumentParser(description="Demo multi-tenant tool isolation")
     parser.add_argument("--region", help="AWS region (override)", default=None)
-    args = parser.parse_args()
+    parser.parse_args()
 
     config = load_config()
 

@@ -51,7 +51,7 @@ def get_token(token_endpoint, client_id, client_secret, scope):
 def main():
     parser = argparse.ArgumentParser(description="Demo cross-tenant call denial")
     parser.add_argument("--region", help="AWS region (override)", default=None)
-    args = parser.parse_args()
+    parser.parse_args()
 
     config = load_config()
 
@@ -105,8 +105,8 @@ def main():
     log.info(f"{'='*60}")
     log.info(f"  Caller:   Banking tenant (scope: {banking_cfg['scope']})")
     log.info(f"  Tool:     {target_tool}")
-    log.info(f"  Belongs to: Insurance tenant only")
-    log.info(f"  Expected: DENIED")
+    log.info("  Belongs to: Insurance tenant only")
+    log.info("  Expected: DENIED")
     log.info("")
 
     success, result = call_tool_raw(

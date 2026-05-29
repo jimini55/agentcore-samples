@@ -523,8 +523,8 @@ def main():
     log.info("Deployment complete!")
     log.info(f"  Gateway URL:      {gateway_info['gateway_url']}")
     log.info(f"  Policy Engine:    {policy_info['engine_id']}")
-    log.info(f"  Config saved to:  config.json")
-    log.info(f"\n  Next: python demo.py")
+    log.info("  Config saved to:  config.json")
+    log.info("\n  Next: python demo.py")
     log.info("=" * 65)
 
 
