@@ -5,7 +5,7 @@ The agent has zero tenant-specific logic. Tool visibility is determined entirely
 by the Cedar policy engine on the Gateway, which inspects the JWT scope claim.
 """
 
-import json
+import uuid
 
 from strands import Agent
 from strands.models import BedrockModel
@@ -55,3 +55,28 @@ def list_tenant_tools(gateway_url: str, access_token: str) -> list:
     with mcp_client:
         tools = mcp_client.list_tools_sync()
         return [(t.tool_name, getattr(t, "description", "")) for t in tools]
+
+
+def call_tool_raw(gateway_url: str, access_token: str, tool_name: str, arguments: dict):
+    """Attempt to call a specific tool via the Gateway.
+
+    Returns (success: bool, message: str).
+    """
+    mcp_client = MCPClient(
+        lambda: streamablehttp_client(
+            gateway_url,
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+    )
+    with mcp_client:
+        try:
+            result = mcp_client.call_tool_sync(
+                tool_use_id=str(uuid.uuid4()),
+                name=tool_name,
+                arguments=arguments,
+            )
+            if result.status == "error":
+                return False, result.content
+            return True, result.content
+        except Exception as e:
+            return False, str(e)

@@ -4,10 +4,12 @@ Demonstrate multi-tenant tool isolation via Cedar policies on AgentCore Gateway.
 For each tenant:
   1. Obtain an OAuth2 token with tenant-specific scope
   2. Connect to the Gateway and list visible tools
-  3. Show that each tenant only sees its permitted tools
+  3. Show that Cedar policies (ENFORCE mode) filter tools/list per tenant
 
 Usage:
     python demo.py [--region REGION]
+
+See also: demo_deny.py (demonstrates call-time denial of cross-tenant tools)
 """
 
 import argparse
@@ -81,31 +83,49 @@ def main():
 
     log.info("Multi-Tenant Gateway Isolation Demo")
     log.info("=" * 60)
-    log.info("Each tenant connects to the SAME Gateway with a different JWT.")
-    log.info("Cedar policies filter tools/list so each tenant only sees its tools.")
-    log.info("The LLM never learns about cross-tenant tools (invisible, not denied).")
+    log.info("")
+    log.info("  Policy engine mode: ENFORCE")
+    log.info("    ENFORCE = tools/list filtered + call_tool denied")
+    log.info("    MONITOR = all tools visible, violations logged only")
+    log.info("")
+    log.info("  This demo shows visibility filtering (tools/list per tenant).")
+    log.info("  Run demo_deny.py to see call-time denial of cross-tenant tools.")
 
-    insurance_tools = demo_tenant(config, "insurance")
     banking_tools = demo_tenant(config, "banking")
+    insurance_tools = demo_tenant(config, "insurance")
 
+    # Summary
     log.info(f"\n{'='*60}")
-    log.info("  ISOLATION VERIFICATION")
+    log.info("  VISIBILITY SUMMARY")
     log.info(f"{'='*60}")
-    log.info(f"  Insurance tools: {sorted(insurance_tools)}")
-    log.info(f"  Banking tools:   {sorted(banking_tools)}")
+    log.info(f"  Insurance sees: {sorted(insurance_tools)}")
+    log.info(f"  Banking sees:   {sorted(banking_tools)}")
 
-    overlap = insurance_tools & banking_tools
     insurance_only = insurance_tools - banking_tools
     banking_only = banking_tools - insurance_tools
+    shared = insurance_tools & banking_tools
 
-    log.info(f"\n  Insurance-only:  {sorted(insurance_only)}")
-    log.info(f"  Banking-only:    {sorted(banking_only)}")
-    log.info(f"  Overlap:         {sorted(overlap) if overlap else 'NONE'}")
+    if insurance_only:
+        log.info(f"  Insurance-only:  {sorted(insurance_only)}")
+    if banking_only:
+        log.info(f"  Banking-only:    {sorted(banking_only)}")
+    if shared:
+        log.info(f"  Shared:          {sorted(shared)}")
 
-    if not overlap:
-        log.info("\n  SUCCESS: Tenants have completely isolated tool sets.")
-    else:
-        log.info(f"\n  NOTE: Shared tools detected (expected if both policies permit them)")
+    # Takeaway
+    log.info(f"\n{'='*60}")
+    log.info("  TAKEAWAY")
+    log.info(f"{'='*60}")
+    log.info("  Each tenant's Cedar policy defines which tools appear in tools/list.")
+    log.info("  The LLM prompt only contains permitted tools. Unauthorized tools")
+    log.info("  are not denied at call time; they simply do not exist in the LLM's")
+    log.info("  context. The agent code has zero tenant logic.")
+    log.info("")
+    log.info("  To add a new tenant: one Cognito client + one Cedar policy.")
+    log.info("  No agent code change. No redeploy. Runtime operation.")
+    log.info("")
+    log.info("  Next: python demo_deny.py  (cross-tenant call denial)")
+    log.info("=" * 60)
 
 
 if __name__ == "__main__":
