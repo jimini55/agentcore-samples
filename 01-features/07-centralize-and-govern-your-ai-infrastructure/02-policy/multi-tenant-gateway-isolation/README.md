@@ -8,29 +8,30 @@ zero tenant-specific logic.
 ## Architecture
 
 ```
-┌──────────────┐         ┌──────────────────────────────────────────────────┐
-│  HealthCo    │  JWT    │              AgentCore MCP Gateway               │
-│  (insurance) │────────▶│                                                  │
-│              │ scope:  │  ┌──────────────────────────────────────────┐    │
-└──────────────┘ platform│  │       Cedar Policy Engine (ENFORCE)       │    │
-                /insurance  │                                          │    │
-                         │  │  scope like "*platform/insurance*"        │    │
-┌──────────────┐  JWT    │  │    → 6 tools visible                     │    │
-│  FinBank     │────────▶│  │                                          │    │
-│  (banking)   │ scope:  │  │  scope like "*platform/banking*"         │    │
-│              │ platform/│  │    → 3 tools visible                     │    │
-└──────────────┘ banking │  │                                          │    │
-                         │  └──────────────────────────────────────────┘    │
-                         │                      │                            │
-                         └──────────────────────┼────────────────────────────┘
-                                                │ permitted only
-                                                ▼
-              ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-              │ submit_decision │  │ query_claims    │  │ flag_suspicious │
-              │ notify_team     │  │ query_accounts  │  │ query_accounts  │
-              │ (insurance)     │  │ query_members   │  │ query_txns      │
-              └─────────────────┘  │ (shared)        │  │ (banking)       │
-                                   └─────────────────┘  └─────────────────┘
+                     +--------------------------------------------+
+                     |     AgentCore MCP Gateway                  |
+                     |                                            |
++--------------+     |  +-------------------------------------+   |
+| HealthCo     | JWT |  | Cedar Policy Engine (ENFORCE)       |   |
+| scope:       |---->|  |                                     |   |
+| platform/    |     |  | scope like "*platform/insurance*"   |   |
+| insurance    |     |  |   -> 6 tools visible                |   |
++--------------+     |  |                                     |   |
+                     |  | scope like "*platform/banking*"     |   |
++--------------+     |  |   -> 3 tools visible                |   |
+| FinBank      | JWT |  |                                     |   |
+| scope:       |---->|  +-------------------------------------+   |
+| platform/    |     |                   |                        |
+| banking      |     +------------------+-------------------------+
++--------------+                         |
+                                         | permitted only
+                                         v
+      +-----------------+  +-----------------+  +-----------------+
+      | submit_decision |  | query_claims    |  | flag_suspicious |
+      | notify_team     |  | query_accounts  |  | query_accounts  |
+      | (insurance)     |  | query_members   |  | query_txns      |
+      +-----------------+  | (shared)        |  | (banking)       |
+                           +-----------------+  +-----------------+
 ```
 
 **Key insight**: In ENFORCE mode, tools without a matching `permit` policy are
